@@ -1,0 +1,29 @@
+name: 'Continuous Integration'
+on:
+  - workflow_dispatch
+  - push
+
+jobs:
+  exercise-on-tier-1-platforms:
+    strategy:
+      matrix:
+        implementation: ['sbcl', 'sbcl']
+        os: ['ubuntu-latest', 'macos-latest']
+    runs-on: '${{ matrix.os }}'
+    name: 'Exercise on Tier 1 Platform'
+    steps:
+      - uses: actions/checkout@v3
+      - name: 'Install MacPorts'
+        if: runner.os == 'macOS'
+        uses: melusina-org/setup-macports@v1
+      - uses: melusina-org/setup-common-lisp@v1
+        with:
+          implementation: '${{ matrix.implementation }}'
+      - uses: melusina-org/setup-quicklisp@v1
+        with:
+          implementation: '${{ matrix.implementation }}'
+      - uses: ./
+        with:
+          implementation: '${{ matrix.implementation }}'
+          system: 'uiop'
+          entrypoint: 'quit'

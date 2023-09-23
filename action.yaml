@@ -1,0 +1,54 @@
+name: 'Make a Common Lisp Program'
+description: >-
+  Make a Common Lisp program running a specific Common Lisp system
+branding:
+  icon: box
+  color: blue
+inputs:
+  implementation:
+    description: |
+      The Common Lisp implementation to use. This can be one of the
+      following values:
+
+        sbcl
+
+      in the future we would like to support all of
+
+        abcl clasp clisp ecl gcl sbcl
+      
+    default: 'sbcl'
+
+  system:
+    description: |
+      The Common Lisp system to load.
+    required: true
+
+  entrypoint:
+    description: |
+      The entrypoint of the program to run.
+    required: true
+
+  program:
+    description: |
+      The name of the program to prepare.
+    default: ':not-set'
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Ensure the implementation is SBCL'
+      shell: sh
+      run: |
+        test "${{ inputs.implementation }}" = 'sbcl'
+
+    - name: 'Configure program preparation'
+      id: 'configure'
+      uses: melusina-org/run-common-lisp-program@v1
+      with:
+        implementation: ${{ inputs.implementation }}
+        system: org.melusina.github-action.make-common-lisp-program
+        entrypoint: configure
+      env:
+        LISP_IMPLEMENTATION: ${{ inputs.implementation }}
+        LISP_SYSTEM: ${{ inputs.system }}
+        LISP_ENTRYPOINT: ${{ inputs.entrypoint }}
+        LISP_PROGRAM: ${{ inputs.program }}
