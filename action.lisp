@@ -16,46 +16,53 @@
 
 (defpackage #:org.melusina.github-action.make-common-lisp-program
   (:use #:common-lisp)
+  (:local-nicknames
+   (#:actions #:org.melusina.github-actions))
   (:export
    #:configure
    ))
 
 (in-package #:org.melusina.github-action.make-common-lisp-program)
 
-(defun getenv (variable-name &optional default-value)
-  (or (uiop:getenv variable-name)
-      default-value
-      (flet ((read-value ()
-	       (format *trace-output* "~&Enter the value to instead of ~A: " variable-name)
-	       (list (read-line))))
-	(restart-case (error "The environment variable ~A is not defined." variable-name)
-	  (use-value (value)
-	    :report "Specify a value to  use instead of the missing environment variable."
-	    :interactive read-value
-	    value)))))
+(defun getenv (variable-name)
+  (let ((value
+	  (uiop:getenv variable-name)))
+    (unless (string-equal value ":NOT-SET")
+      value)))
 
 (defparameter *implementation*
-  (getenv "LISP_IMPLEMENTATION" "sbcl"))
+  (or (uiop:getenv "LISP_IMPLEMENTATION")
+      "sbcl"))
 
 (defparameter *system*
-  (getenv "LISP_SYSTEM"))
+  (uiop:getenv "LISP_SYSTEM"))
 
 (defparameter *entrypoint*
-  (getenv "LISP_ENTRYPOINT"))
+  (uiop:getenv "LISP_ENTRYPOINT"))
 
 (defparameter *program*
   (flet ((make-program-name ()
-	   (concatenate
-	    'string
-	    *system* "-" *entrypoint*
-	    (when (uiop:os-windows-p)
-	      ".exe"))))
-    (getenv "LISP_PROGRAM" (make-program-name))))
+	   (when (and *system* *entrypoint*)
+	     (concatenate
+	      'string
+	      *system* "-" *entrypoint*
+	      (when (uiop:os-windows-p)
+		".exe")))))
+    (or (uiop:getenv "LISP_PROGRAM") (make-program-name))))
 
 (defun write-detail (&key name key value)
   "Write detail NAME with VALUE.
 Additionally, when running on GitHub Actions, the key is written
 to job output."
+  (unless value
+    (flet ((read-value ()
+	     (format *trace-output* "~&Enter the value to use for ~A: " key)
+	     (list (read-line))))
+      (restart-case (error "The value for ~A (~A) is not defined." name key)
+	(use-value (value)
+	  :report "Specify a value to  use instead of the missing value definition."
+	  :interactive read-value
+	  value))))
   (format t "~&~A: ~A~%" name value)
   (when (uiop:getenv "GITHUB_OUTPUT")
     (with-open-file (output (uiop:getenv "GITHUB_OUTPUT")

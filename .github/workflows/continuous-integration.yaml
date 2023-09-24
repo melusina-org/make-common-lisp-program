@@ -7,12 +7,12 @@ jobs:
   exercise-on-tier-1-platforms:
     strategy:
       matrix:
-        implementation: ['sbcl', 'sbcl']
+        implementation: ['sbcl']
         os: ['ubuntu-latest', 'macos-latest']
     runs-on: '${{ matrix.os }}'
     name: 'Exercise on Tier 1 Platform'
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: 'Install MacPorts'
         if: runner.os == 'macOS'
         uses: melusina-org/setup-macports@v1
@@ -20,8 +20,18 @@ jobs:
         with:
           implementation: '${{ matrix.implementation }}'
       - uses: melusina-org/setup-quicklisp@v1
+        id: quicklisp
         with:
           implementation: '${{ matrix.implementation }}'
+      - uses: actions/checkout@v4
+        with:
+          repository: melusina-org/cl-github-actions
+          path: ${{ steps.quicklisp.outputs.quicklisp-local-projects }}/cl-github-actions
+      - uses: melusina-org/run-common-lisp-program@v1
+        with:
+          implementation: '${{ matrix.implementation }}'
+          system: 'org.melusina.github-action.make-common-lisp-program/testsuite'
+          entrypoint: 'unit-tests'
       - uses: ./
         with:
           implementation: '${{ matrix.implementation }}'
