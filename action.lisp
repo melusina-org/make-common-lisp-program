@@ -50,51 +50,27 @@
 		".exe")))))
     (or (uiop:getenv "LISP_PROGRAM") (make-program-name))))
 
-(defun write-detail (&key name key value)
-  "Write detail NAME with VALUE.
-Additionally, when running on GitHub Actions, the key is written
-to job output."
-  (unless value
-    (flet ((read-value ()
-	     (format *trace-output* "~&Enter the value to use for ~A: " key)
-	     (list (read-line))))
-      (restart-case (error "The value for ~A (~A) is not defined." name key)
-	(use-value (value)
-	  :report "Specify a value to  use instead of the missing value definition."
-	  :interactive read-value
-	  value))))
-  (format t "~&~A: ~A~%" name value)
-  (when (uiop:getenv "GITHUB_OUTPUT")
-    (with-open-file (output (uiop:getenv "GITHUB_OUTPUT")
-			    :direction :output
-			    :if-exists :append :if-does-not-exist :create)
-      (format output "~&~A=~A~%" key value))))
-
-(defun write-make-program-details ()
+(defun write-make-program-configuration ()
   "Write details about the current Common Lisp Implementation."
   (loop :for detail
 	:in
 	(list
 	 (list
-	  :name "Implementation"
 	  :key "implementation"
 	  :value *implementation*)
 	 (list
-	  :name "System"
 	  :key "system"
 	  :value *system*)
 	 (list
-	  :name "Entrypoint"
 	  :key "entrypoint"
 	  :value *entrypoint*)
 	 (list
-	  :name "Program"
 	  :key "program"
 	  :value *program*))
-	:do (apply #'write-detail detail)))
+	:do (apply #'actions:set-output detail)))
 
 (defun configure ()
   "Perform configuration step."
-  (write-make-program-details))
+  (write-make-program-configuration))
 
 ;;;; End of file `action.lisp'
