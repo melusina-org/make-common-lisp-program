@@ -45,6 +45,14 @@ runs:
         traceme: ${{ steps.debug.outputs.traceme }}
         EOF
 
+    - name: 'Trace the output of configuration'
+      shell: sh
+      run: |
+        cat <<EOF
+        implementation: ${{ steps.configure.outputs.implementation }}
+        system: ${{ steps.configure.outputs.system }}
+        EOF
+
     - name: 'Build Common Lisp program'
       uses: melusina-org/asdf-operate@v1
       with:
