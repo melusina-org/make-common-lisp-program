@@ -23,32 +23,31 @@ inputs:
       The Common Lisp system to load.
     required: true
 
-  entrypoint:
-    description: |
-      The entrypoint of the program to run.
-    required: true
-
-  program:
-    description: |
-      The name of the program to prepare.
-    default: ':not-set'
 runs:
   using: 'composite'
   steps:
-    - name: 'Ensure the implementation is SBCL'
+    - name: 'Configure program preparation'
+      id: configure
       shell: sh
       run: |
-        test "${{ inputs.implementation }}" = 'sbcl'
+        ${{ github.action_path }}/with_lisp_implementation ${{ inputs.implementation }} <<EOF
+        (ql:quickload '#:org.melusina.github-action.make-common-lisp-program)
+        (org.melusina.github-action.make-common-lisp-program:configure)
+      env:
+        LISP_SYSTEM: ${{ inputs.system }}
 
-    - name: 'Configure program preparation'
-      id: 'configure'
-      uses: melusina-org/run-common-lisp-program@v1
+    - name: 'Trace the output of configuration'
+      shell: sh
+      run: |
+        cat <<EOF
+        implementation: ${{ steps.configure.outputs.implementation }}
+        system: ${{ steps.configure.outputs.system }}
+        traceme: ${{ steps.debug.outputs.traceme }}
+        EOF
+
+    - name: 'Build Common Lisp program'
+      uses: melusina-org/asdf-operate@v1
       with:
         implementation: ${{ inputs.implementation }}
-        system: org.melusina.github-action.make-common-lisp-program
-        entrypoint: configure
-      env:
-        LISP_IMPLEMENTATION: ${{ inputs.implementation }}
-        LISP_SYSTEM: ${{ inputs.system }}
-        LISP_ENTRYPOINT: ${{ inputs.entrypoint }}
-        LISP_PROGRAM: ${{ inputs.program }}
+        system: ${{ steps.configure.outputs.system }}
+        operation: asdf:program-op

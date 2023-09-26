@@ -37,19 +37,6 @@
 (defparameter *system*
   (uiop:getenv "LISP_SYSTEM"))
 
-(defparameter *entrypoint*
-  (uiop:getenv "LISP_ENTRYPOINT"))
-
-(defparameter *program*
-  (flet ((make-program-name ()
-	   (when (and *system* *entrypoint*)
-	     (concatenate
-	      'string
-	      *system* "-" *entrypoint*
-	      (when (uiop:os-windows-p)
-		".exe")))))
-    (or (uiop:getenv "LISP_PROGRAM") (make-program-name))))
-
 (defun write-make-program-configuration ()
   "Write details about the current Common Lisp Implementation."
   (loop :for detail
@@ -60,13 +47,7 @@
 	  :value *implementation*)
 	 (list
 	  :key "system"
-	  :value *system*)
-	 (list
-	  :key "entrypoint"
-	  :value *entrypoint*)
-	 (list
-	  :key "program"
-	  :value *program*))
+	  :value *system*))
 	:do (apply #'actions:set-output detail)))
 
 (defun configure ()

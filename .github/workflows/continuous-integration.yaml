@@ -32,8 +32,12 @@ jobs:
           implementation: '${{ matrix.implementation }}'
           system: 'org.melusina.github-action.make-common-lisp-program/testsuite'
           entrypoint: 'unit-tests'
+      - uses: actions/checkout@v4
+        with:
+          repository: melusina-org/reference-utility
+          path: ${{ steps.quicklisp.outputs.quicklisp-local-projects }}/reference-utility
       - uses: ./
         with:
           implementation: '${{ matrix.implementation }}'
-          system: 'uiop'
-          entrypoint: 'quit'
+          system: 'org.melusina.reference-utility/executable'
+
