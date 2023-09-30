@@ -15,14 +15,19 @@
   :description "GitHub Action to make Common Lisp programs."
   :author "Michaël Le Barbier"
   :license "MIT License"
-  :depends-on (#:asdf #:uiop #:org.melusina.github-actions)
+  :depends-on (#:asdf
+	       #:uiop
+	       #:org.melusina.github-actions)
   :components ((:file "action")))
 
 (asdf:defsystem #:org.melusina.github-action.make-common-lisp-program/testsuite
   :description "Testsuite for GitHub Action to make Common Lisp programs."
   :author "Michaël Le Barbier"
   :license "MIT License"
-  :depends-on (#:asdf #:uiop #:org.melusina.confidence #:org.melusina.github-action.make-common-lisp-program)
+  :depends-on (#:asdf
+	       #:uiop
+	       #:org.melusina.confidence
+	       #:org.melusina.github-action.make-common-lisp-program)
   :components ((:file "testsuite")))
 
 ;;;; End of file `org.melusina.github-action.make-common-lisp-program'
