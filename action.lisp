@@ -24,18 +24,29 @@
 
 (in-package #:org.melusina.github-action.make-common-lisp-program)
 
-(defun getenv (variable-name)
-  (let ((value
-	  (uiop:getenv variable-name)))
-    (unless (string-equal value ":NOT-SET")
-      value)))
-
 (defparameter *implementation*
   (or (uiop:getenv "LISP_IMPLEMENTATION")
       "sbcl"))
 
 (defparameter *system*
   (uiop:getenv "LISP_SYSTEM"))
+
+(defun build-pathname (&optional (system *system*))
+  (let ((pathname
+	  (slot-value (asdf:find-system system t) 'asdf/system:build-pathname)))
+    (flet ((ensure-build-pathname-is-set ()
+	     (unless pathname
+	       (error "Build system ~A does not define a BUILD-PATHNAME." system)))
+	   (finalize-pathname ()
+	     (let ((program-pathname
+		     (if (uiop:os-windows-p)
+			 (concatenate 'string pathname ".exe")
+			 pathname)))
+	       (merge-pathnames
+		program-pathname
+		(asdf:system-source-directory system)))))
+      (ensure-build-pathname-is-set)
+      (finalize-pathname))))
 
 (defun write-make-program-configuration ()
   "Write details about the current Common Lisp Implementation."
@@ -47,7 +58,10 @@
 	  :value *implementation*)
 	 (list
 	  :key "system"
-	  :value *system*))
+	  :value *system*)
+	 (list
+	  :key "build-pathname"
+	  :value (build-pathname)))
 	:do (apply #'actions:set-output detail)))
 
 (defun configure ()

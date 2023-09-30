@@ -1,0 +1,101 @@
+#!/bin/sh
+
+# with_lisp_implementation — Load Lisp Scripts with the given implementation
+
+# Melusina Actions (https://github.com/melusina-org/make-common-lisp-program)
+# This file is part of Melusina Actions.
+#
+# Copyright © 2023 Michaël Le Barbier
+# All rights reserved.
+
+# This file must be used under the terms of the MIT License.
+# This source file is licensed as described in the file LICENSE, which
+# you should have received as part of this distribution. The terms
+# are also available at https://opensource.org/licenses/MIT
+
+: ${lisp_implementation:='sbcl'}
+
+lisp_load_file()
+(
+    local argv script
+
+    renaissance_lisp()
+    {
+	set -- "$@" --break
+	while true; do
+	    case "$1" in
+		*.lisp)
+		    set -- "$@" --load "$1"
+		    shift
+		    ;;
+		'('*')')
+		    set -- "$@" --eval "$1"
+		    shift
+		    ;;
+		--break)
+		    set -- "$@" --eval '(quit)'
+		    shift
+		    break
+		    ;;
+		*)
+		    1>&2 printf 'Failure: %s: Cannot process argument.\n' "$1"
+		    exit 64
+		    ;;
+	    esac
+	done
+
+	case "${lisp_implementation}" in
+	    sbcl)
+		set -- --disable-debugger "$@"
+		;;
+	    ecl)
+		set --  --nodebug "$@"
+		;;
+	esac
+
+	exec "${lisp_implementation}" "$@"
+    }
+
+    if [ $# -eq 0 ]; then
+	script="$(mktemp).lisp"
+	trap "rm -f ${script}" EXIT TERM INT
+	cat > "${script}"
+	set -- "${script}"
+    fi
+    
+    case "${lisp_implementation}" in
+	abcl|ecl|sbcl)
+	    renaissance_lisp "$@"
+	    ;;
+	clisp)
+	    ubuntu_asdf="/usr/share/common-lisp/source/cl-asdf/asdf.lisp"
+	    if [ -f "${ubuntu_asdf}" ]; then
+		set -- "${ubuntu_asdf}" "$@"
+	    fi
+	    exec clisp "$@"
+	    ;;
+	*)
+	    set -x
+	    "${lisp_implementation}" -h
+	    "${lisp_implementation}" --help
+	    exit 1
+	    ;;
+    esac
+)
+
+lisp_main()
+{
+    case "$1" in
+        abcl|clasp|clisp|ecl|gcl|sbcl)
+	    lisp_implementation="$1"
+	    shift
+	    ;;
+        *)
+            exit 70
+    esac
+    lisp_load_file "$@"
+}
+
+lisp_main "$@"
+
+# End of file `with_lisp_implementation'

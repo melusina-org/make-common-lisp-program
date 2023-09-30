@@ -23,6 +23,12 @@ inputs:
       The Common Lisp system to load.
     required: true
 
+outputs:
+  build-pathname:
+    description: |
+      The pathname to the produced program.
+    value: ${{ steps.configure.outputs.build-pathname }}
+
 runs:
   using: 'composite'
   steps:
@@ -42,7 +48,7 @@ runs:
         cat <<EOF
         implementation: ${{ steps.configure.outputs.implementation }}
         system: ${{ steps.configure.outputs.system }}
-        traceme: ${{ steps.debug.outputs.traceme }}
+        build-pathname: ${{ steps.configure.outputs.build-pathname }}
         EOF
 
     - name: 'Trace the output of configuration'
