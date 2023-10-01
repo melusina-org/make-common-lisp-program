@@ -55,3 +55,8 @@ jobs:
         shell: sh
         run: |
           ${{ steps.make.outputs.build-pathname }}
+      - name: 'Upload Common Lisp Reference Utility'
+        uses: actions/upload-artifact@v3
+        with:
+          name: Common Lisp Reference Utility ${{ matrix.implementation }} ${{ runner.os }} ${{ runner.arch }}
+          path: ${{ steps.make.outputs.build-pathname }}
