@@ -65,3 +65,9 @@ runs:
         implementation: ${{ inputs.implementation }}
         system: ${{ steps.configure.outputs.system }}
         operation: asdf:program-op
+
+    - name: 'Ensure Common Lisp program has been built'
+      shell: sh
+      run: |
+        test -x ${{ steps.configure.outputs.build-pathname }}
+
