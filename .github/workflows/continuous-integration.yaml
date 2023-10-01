@@ -20,28 +20,38 @@ jobs:
       - name: 'Install MacPorts'
         if: runner.os == 'macOS'
         uses: melusina-org/setup-macports@v1
-      - uses: melusina-org/setup-common-lisp@v1
+      - name: 'Setup Common Lisp'
+        uses: melusina-org/setup-common-lisp@v1
         with:
           implementation: '${{ matrix.implementation }}'
-      - uses: melusina-org/setup-quicklisp@v1
+      - name: 'Setup Quicklisp'
+        uses: melusina-org/setup-quicklisp@v1
         id: quicklisp
         with:
           implementation: '${{ matrix.implementation }}'
-      - uses: actions/checkout@v4
+      - name: 'Install CL-GITHUB-ACTIONS'
+        uses: actions/checkout@v4
         with:
           repository: melusina-org/cl-github-actions
           path: ${{ steps.quicklisp.outputs.quicklisp-local-projects }}/cl-github-actions
-      - uses: melusina-org/run-common-lisp-program@v1
+      - name: 'Run unit tests'
+        uses: melusina-org/run-common-lisp-program@v1
         with:
           implementation: '${{ matrix.implementation }}'
           system: 'org.melusina.github-action.make-common-lisp-program/testsuite'
           entrypoint: 'unit-tests'
-      - uses: actions/checkout@v4
+      - name: 'Checkout Common Lisp Reference Utility'
+        uses: actions/checkout@v4
         with:
           repository: melusina-org/reference-utility
           path: ${{ steps.quicklisp.outputs.quicklisp-local-projects }}/reference-utility
-      - uses: ./
+      - name: 'Make Common Lisp Reference Utility'
+        uses: ./
+        id: make
         with:
           implementation: '${{ matrix.implementation }}'
           system: 'org.melusina.reference-utility/executable'
-
+      - name: 'Run Common Lisp Reference Utility'
+        shell: sh
+        run: |
+          ${{ steps.make.outputs.build-pathname }}
