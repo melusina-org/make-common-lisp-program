@@ -36,9 +36,10 @@ runs:
       id: configure
       shell: sh
       run: |
-        ${{ github.action_path }}/with_lisp_implementation ${{ inputs.implementation }} <<EOF
+        ${GITHUB_ACTION_PATH}/with_lisp_implementation ${{ inputs.implementation }} <<EOF
         (ql:quickload '#:org.melusina.github-action.make-common-lisp-program)
         (org.melusina.github-action.make-common-lisp-program:configure)
+        EOF
       env:
         LISP_SYSTEM: ${{ inputs.system }}
 
