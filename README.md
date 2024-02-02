@@ -17,8 +17,8 @@ Lisp eco system:
 ## Usage
 
 Create a workflow file in the`.github/workflows` directory of your
-working copy.  This workflow file should use a MacOS runner or a
-Ubuntu Runner and use the branch `v1` of this action.
+working copy.  This workflow file should use a MacOS runner, a
+Ubuntu Runner or a Windows runner and use the branch `v1` of this action.
 
 
 An [example workflow](#example-workflow) is available below. See the GitHub Help Documentation for
@@ -65,7 +65,7 @@ jobs:
     strategy:
       matrix:
         implementation: ['sbcl']
-        os: ['ubuntu-latest', 'macos-latest']
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
     runs-on: '${{ matrix.os }}'
     name: 'Exercise on Tier 1 Platform'
     steps:
